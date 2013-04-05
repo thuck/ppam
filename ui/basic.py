@@ -134,9 +134,6 @@ class FooterMenu(object):
         self.height, self.width = self.win.getmaxyx()
         
     def draw(self):
-        date = time.ctime()
-        self.win.addstr(1, self.width - len(date) - 1, date)
-        self.win.addstr(1, 1, 'Denis Doria de Oliveira Santos')
         _help = 'Per Tab help press h. Global help press H.'
         self.win.addstr(1, self.width/2 - len(_help)/2, _help, curses.color_pair(1))
         self.win.box()
