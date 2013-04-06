@@ -24,7 +24,7 @@ import dbus
 
 
 class TabPlaybackStream(object):
-    def __init__(self, win, footer, conf):
+    def __init__(self, win, footer, conf = None):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = 'Playback'
@@ -142,7 +142,7 @@ class TabPlaybackStream(object):
         self.win.refresh()
 
 class TabRecordStream(object):
-    def __init__(self, win, footer, conf):
+    def __init__(self, win, footer, conf = None):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = 'Record'
@@ -272,7 +272,7 @@ class TabRecordStream(object):
 
     
 class TabOutputDevices(object):
-    def __init__(self, win, footer, conf):
+    def __init__(self, win, footer, conf = None):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = 'Output Devices'
@@ -434,7 +434,7 @@ class TabOutputDevices(object):
         self.win.refresh()
 
 class TabInputDevices(object):
-    def __init__(self, win, footer, conf):
+    def __init__(self, win, footer, conf = None):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = 'Input Devices'
@@ -595,7 +595,7 @@ class TabInputDevices(object):
         self.win.refresh()
 
 class TabCards(object):
-    def __init__(self, win, footer, conf):
+    def __init__(self, win, footer, conf = None):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = 'Cards'
