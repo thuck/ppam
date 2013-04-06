@@ -43,7 +43,11 @@ def main(stdscr):
     #**If the tab will block (waiting the user input) it must
     #handle the resize error, and also update the footer**
 
-    tab_list = [getattr(tabs, tab_)(body, footer,'a') for tab_ in dir(tabs) if 'Tab' in tab_]
+    tab_list = [tabs.TabPlaybackStream(body, footer),
+                tabs.TabRecordStream(body, footer),
+                tabs.TabOutputDevices(body, footer),
+                tabs.TabInputDevices(body, footer),
+                tabs.TabCards(body, footer)]
               
     top_menu = basic.TopMenu(menu, tab_list)
     footer_menu = basic.FooterMenu(footer)
@@ -51,12 +55,12 @@ def main(stdscr):
     footer_menu.draw()
 
     _help = basic.Help(body, footer_menu)    
+    top_menu.focus = 1
+    tab = top_menu.draw()
+    tab.draw()
     
     stdscr.refresh()
     stdscr.timeout(150) #Avoid too many refreshes, but will keep the clock fine
-    
-    top_menu.focus = 1
-    tab = top_menu.draw()
 
     while True:        
         c = stdscr.getch()
