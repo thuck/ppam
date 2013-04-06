@@ -234,7 +234,6 @@ class Card(object):
     @active_profile.setter
     def active_profile(self, profile):
         self.bus.Set(self.path, 'ActiveProfile', profile, dbus_interface='org.freedesktop.DBus.Properties')
-        
 
     @property
     def property_list(self):
@@ -426,6 +425,7 @@ class DevicePort(object):
         self.conn = conn
         self.bus = conn.get_object(object_path=port)
         self.get = ft.partial(self.bus.Get, self.path)
+        self.port_name = port
 
     @property
     def index(self):
