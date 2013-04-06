@@ -19,8 +19,9 @@
 from pulse import pulseaudio as pa
 from itertools import cycle
 import curses
-from curses import KEY_UP, KEY_DOWN
+from curses import KEY_UP, KEY_DOWN, KEY_ENTER
 import dbus
+
 
 class TabPlaybackStream(object):
     def __init__(self, win, footer, conf):
@@ -139,6 +140,136 @@ class TabPlaybackStream(object):
         self.max_item = line_number
 
         self.win.refresh()
+
+class TabRecordStream(object):
+    def __init__(self, win, footer, conf):
+        self.win = win
+        self.height, self.width = self.win.getmaxyx()
+        self.name = 'Record'
+        self.conf = conf
+        self.help = ["+/- to Increase and decrease volume",
+                     ",/. to Increase and decrease right volume",
+                     "</> to Increase and decrease left volume",
+                     "m to Mute"]
+        self.conn = pa.dbus_connection()
+        self.core = pa.Core(self.conn)
+        self.selected_item = 0
+        self.max_item = 0
+
+    def update(self, char):
+        if char == KEY_UP and self.selected_item > 0:
+            self.selected_item -= 1
+
+        elif char == KEY_DOWN and self.selected_item < self.max_item:
+            self.selected_item += 1
+
+        elif char in (ord('+'), ord('-')):
+            current_volume = self.streams[self.selected_item].volume
+
+            if char == ord('+'):
+                new_left = current_volume[0] + 65536/100
+                new_right = current_volume[1] + 65536/100
+                if new_left > 98304:
+                    new_left = 98304
+
+                if new_right > 98304:
+                    new_right = 98304
+
+            else:
+                new_left = current_volume[0] - 65536/100
+                new_right = current_volume[1] - 65536/100
+
+                if new_left < 0:
+                    new_left = 0
+
+                if new_right < 0:
+                    new_right = 0
+
+
+            self.streams[self.selected_item].volume = [dbus.UInt32(new_left), dbus.UInt32(new_right)]
+
+        elif char in (ord('m'),):
+            self.streams[self.selected_item].mute = not self.streams[self.selected_item].mute
+
+        elif char in (ord('>'), ord('.')):
+            current_volume = self.streams[self.selected_item].volume
+            new_left = current_volume[0]
+            new_right = current_volume[1]
+
+            if char == ord('>'):
+                new_left += 65536/100
+
+            else:
+                new_right += 65536/100
+
+            if new_left > 98304:
+                new_left = 98304
+
+            if new_right > 98304:
+                new_right = 98304
+
+            self.streams[self.selected_item].volume = [dbus.UInt32(new_left), dbus.UInt32(new_right)]
+
+        elif char in (ord('<'), ord(',')):
+            current_volume = self.streams[self.selected_item].volume
+            new_left = current_volume[0]
+            new_right = current_volume[1]
+
+            if char == ord('<'):
+                new_left -= 65536/100
+
+            else:
+                new_right -= 65536/100
+
+            if new_left < 0:
+                new_left = 0
+
+            if new_right < 0:
+                new_right = 0
+
+            self.streams[self.selected_item].volume = [dbus.UInt32(new_left), dbus.UInt32(new_right)]
+
+        if self.selected_item > self.max_item:
+            self.selected_item = self.max_item
+
+
+    def draw(self):
+        self.streams = [pa.Stream(self.conn, stream) for stream in self.core.record_streams]
+        self.win.erase()
+        self.win.box()
+        line_number = 0
+
+        for line_number, stream in enumerate(self.streams):
+            app_name = ''.join(str(byte) for byte in stream.property_list['application.name'])[:-1]
+            app_pid = ''.join(str(byte) for byte in stream.property_list['application.process.id'])[:-1]
+
+            try:
+                volume_left = int(stream.volume[0]*100/65536)
+                volume_right = int(stream.volume[1]*100/65536)
+
+            except dbus.exceptions.DBusException:
+                volume_left = 0
+                volume_right = 0
+
+            line = '[%s] L:%s%% R:%s%% (%s)' % (app_name, volume_left, volume_right, app_pid)
+
+            try:
+                if stream.mute:
+                    line = '%s [M]' % (line)
+
+            except dbus.exceptions.DBusException:
+                pass
+
+            if self.selected_item == line_number:
+                self.win.addstr(line_number + 1, 1, line, curses.color_pair(1))
+        
+            else:
+                self.win.addstr(line_number + 1, 1, line)
+
+        self.max_item = line_number
+
+        self.win.refresh()
+
     
 class TabOutputDevices(object):
     def __init__(self, win, footer, conf):
@@ -284,6 +415,168 @@ class TabOutputDevices(object):
 
         for line_number, device in enumerate(self.devices):
             app_name = ''.join(str(byte) for byte in device.property_list['device.profile.name'])[:-1]
+            port = pa.DevicePort(self.conn, device.active_port)
+            volume_left = int(device.volume[0]*100/65536)
+            volume_right = int(device.volume[1]*100/65536)
+            line = '[%s] L:%s%% R:%s%% %s' % (app_name, volume_left, volume_right, port.name.split('-')[-1].capitalize())
+
+            if device.mute:
+                line = '%s [M]' % (line)
+
+            if self.selected_item == line_number:
+                self.win.addstr(line_number + 1, 1, line, curses.color_pair(1))
+
+            else:
+                self.win.addstr(line_number + 1, 1, line)
+
+        self.max_item = line_number
+
+        self.win.refresh()
+
+class TabInputDevices(object):
+    def __init__(self, win, footer, conf):
+        self.win = win
+        self.height, self.width = self.win.getmaxyx()
+        self.name = 'Input Devices'
+        self.conf = conf
+        self.help = ["Input Devices"]
+        self.conn = pa.dbus_connection()
+        self.core = pa.Core(self.conn)
+        self.selected_item = 0
+        self.max_item = 0
+        self.footer = footer
+
+    def update(self, char):
+
+        if char == ord('i'):
+            self.draw_info()
+#            return
+
+        if char == KEY_UP and self.selected_item > 0:
+            self.selected_item -= 1
+
+        elif char == KEY_DOWN and self.selected_item < self.max_item:
+            self.selected_item += 1
+
+        elif char in (ord('+'), ord('-')):
+            current_volume = self.devices[self.selected_item].volume
+
+            if char == ord('+'):
+                new_left = current_volume[0] + 65536/100
+                new_right = current_volume[1] + 65536/100
+                if new_left > 98304:
+                    new_left = 98304
+
+                if new_right > 98304:
+                    new_right = 98304
+
+            else:
+                new_left = current_volume[0] - 65536/100
+                new_right = current_volume[1] - 65536/100
+
+                if new_left < 0:
+                    new_left = 0
+
+                if new_right < 0:
+                    new_right = 0
+
+
+            self.devices[self.selected_item].volume = [dbus.UInt32(new_left), dbus.UInt32(new_right)]
+
+        elif char in (ord('m'),):
+            self.devices[self.selected_item].mute = not self.devices[self.selected_item].mute
+
+        elif char in (ord('>'), ord('.')):
+            current_volume = self.devices[self.selected_item].volume
+            new_left = current_volume[0]
+            new_right = current_volume[1]
+
+            if char == ord('>'):
+                new_left += 65536/100
+
+            else:
+                new_right += 65536/100
+
+            if new_left > 98304:
+                new_left = 98304
+
+            if new_right > 98304:
+                new_right = 98304
+
+            self.devices[self.selected_item].volume = [dbus.UInt32(new_left), dbus.UInt32(new_right)]
+
+        elif char in (ord('<'), ord(',')):
+            current_volume = self.devices[self.selected_item].volume
+            new_left = current_volume[0]
+            new_right = current_volume[1]
+
+            if char == ord('<'):
+                new_left -= 65536/100
+
+            else:
+                new_right -= 65536/100
+
+            if new_left < 0:
+                new_left = 0
+
+            if new_right < 0:
+                new_right = 0
+
+            self.devices[self.selected_item].volume = [dbus.UInt32(new_left), dbus.UInt32(new_right)]
+
+        if self.selected_item > self.max_item:
+            self.selected_item = self.max_item
+
+    def draw_info(self):
+        self.win.box()
+        #This will create a centralize window
+        box = self.win.derwin(self.height/2, self.width/2, self.height/4, self.width/4)
+        hb_height, hb_width = box.getmaxyx()
+        box.erase()
+        box.hline(hb_height - 3, 1, curses.ACS_HLINE, hb_width - 2)
+        message = "Press any key to continue"
+        box.addstr(hb_height - 2, hb_width/2 - len(message)/2, message )
+        box.box()
+
+        device = self.devices[self.selected_item]
+
+        box.addstr(1, 1, "Index: %s" % (device.index))
+        box.addstr(2, 1, "Name: %s" % (device.name))
+        box.addstr(3, 1, "OwnerModule: %s" % (device.owner_module))
+        box.addstr(4, 1, "Card: %s" % (device.card))
+        box.addstr(5, 1, "SampleFormat: %s" % (device.sample_format))
+        box.addstr(6, 1, "Channels: %s" % (','.join([str(x) for x in device.channels])))
+        box.addstr(7, 1, "BaseVolume: %s" % (device.base_volume))
+        box.addstr(8, 1, "VolumeSteps: %s" % (device.volume_steps))
+        box.addstr(9, 1, "ConfiguredLatency: %s" % (device.configured_latency))
+        box.addstr(10, 1, "Latency: %s" % (device.latency))
+        box.addstr(11, 1, "State: %s" % (device.state))
+        box.addstr(12, 1, "Ports: %s" % (','.join([str(x) for x in device.ports])))
+
+        self.win.refresh()
+
+        box.timeout(500)
+        while True:
+
+            c = box.getch()
+
+            if c == curses.KEY_RESIZE:
+                error = ERROR(self.win, self.footer)
+                error.draw("I cannot handle resize...")
+
+                sys.exit(1)
+            elif  c != -1:
+                break
+
+
+    def draw(self):
+        self.devices = [pa.Device(self.conn, device) for device in self.core.sources]
+        self.win.erase()
+        self.win.box()
+        line_number = 0
+
+        for line_number, device in enumerate(self.devices):
+            app_name = ''.join(str(byte) for byte in device.property_list['device.profile.name'])[:-1] if 'device.profile.name' in device.property_list else 'Unknown'
             volume_left = int(device.volume[0]*100/65536)
             volume_right = int(device.volume[1]*100/65536)
             line = '[%s] L:%s%% R:%s%%' % (app_name, volume_left, volume_right)
@@ -300,3 +593,60 @@ class TabOutputDevices(object):
         self.max_item = line_number
 
         self.win.refresh()
+
+class TabCards(object):
+    def __init__(self, win, footer, conf):
+        self.win = win
+        self.height, self.width = self.win.getmaxyx()
+        self.name = 'Cards'
+        self.conf = conf
+        self.help = ["Cards"]
+        self.conn = pa.dbus_connection()
+        self.core = pa.Core(self.conn)
+        self.selected_item = 1
+        self.max_item = 1
+        self.footer = footer
+
+    def update(self, char):
+
+        if char == KEY_UP and self.selected_item > 1:
+            self.selected_item -= 1
+
+        elif char == KEY_DOWN and self.selected_item < self.max_item:
+            self.selected_item += 1
+
+        elif char == ord('a'):
+            #testing code - Doesn't work
+            self.cards[0].active_profile = self.profiles[self.selected_item].profile_name
+
+        if self.selected_item > self.max_item:
+            self.selected_item = self.max_item
+
+    def draw(self):
+        self.cards = [pa.Card(self.conn, card) for card in self.core.cards]
+        self.win.erase()
+        self.win.box()
+        header_number = 0
+        line_number = 0
+
+        for card in self.cards:
+            self.profiles = [pa.CardProfile(self.conn, profile) for profile in card.profiles]
+            active_profile = card.active_profile
+            header_number += 1
+            self.win.addstr(header_number, 1, card.name)
+            for profile in self.profiles:
+                line_number += 1
+                name = '%s %s ' % (profile.name, '[A]') if profile.profile_name == card.active_profile else profile.name
+                self.win.addstr(header_number+line_number, 4, name)
+
+                if self.selected_item == line_number:
+                    self.win.addstr(header_number+line_number, 4, name, curses.color_pair(1))
+
+                else:
+                    self.win.addstr(header_number+line_number, 4, name)
+                
+        self.max_item = line_number
+
+        self.win.refresh()
+
+

@@ -231,6 +231,11 @@ class Card(object):
     def active_profile(self):
         return self.get('ActiveProfile')
 
+    @active_profile.setter
+    def active_profile(self, profile):
+        self.bus.Set(self.path, 'ActiveProfile', profile, dbus_interface='org.freedesktop.DBus.Properties')
+        
+
     @property
     def property_list(self):
         return self.get('PropertyList')
@@ -245,6 +250,7 @@ class CardProfile(object):
         self.conn = conn
         self.bus = conn.get_object(object_path=profile)
         self.get = ft.partial(self.bus.Get, self.path) 
+        self.profile_name = profile
 
     @property
     def index(self):
