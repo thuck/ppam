@@ -43,8 +43,8 @@ def main(stdscr):
     #**If the tab will block (waiting the user input) it must
     #handle the resize error, and also update the footer**
 
-    tab_list = [tabs.TabPlaybackStream(body, footer),
-                tabs.TabRecordStream(body, footer),
+    tab_list = [tabs.TabPlayback(body, footer),
+                tabs.TabRecord(body, footer),
                 tabs.TabOutputDevices(body, footer),
                 tabs.TabInputDevices(body, footer),
                 tabs.TabCards(body, footer)]
@@ -60,14 +60,24 @@ def main(stdscr):
     tab.draw()
     
     stdscr.refresh()
-    stdscr.timeout(150) #Avoid too many refreshes, but will keep the clock fine
+    stdscr.timeout(250) #Avoid too many refreshes, but will keep the clock fine
 
     while True:        
         c = stdscr.getch()
         if c == curses.KEY_RESIZE:
-            error.draw("I cannot handle resize...")
-            sys.exit(1)
-            
+            height, width = stdscr.getmaxyx()
+            menu = stdscr.subwin(3, width, 0, 0)
+            body = stdscr.subwin(height - 6, width, 3, 0)
+            footer = stdscr.subwin(3, width, height - 3, 0)
+
+            top_menu.resize_window(menu)
+            footer_menu.resize_window(footer)
+            tab.resize_window(body)
+
+            top_menu.draw()
+            footer_menu.draw()
+            tab.draw()
+ 
         #This is madness, in gnome-terminal the F1 is captured by the window
         #before it arrives to the curses (konsole is ok)
         #gnome-terminal is a crap

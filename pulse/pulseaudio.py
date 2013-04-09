@@ -293,7 +293,14 @@ class Device(object):
 
     @property
     def name(self):
-        return self.get('Name')
+        name = 'Unknown'
+        try:
+            name = self.get('Name')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return name
 
     @property
     def driver(self):
@@ -321,7 +328,14 @@ class Device(object):
 
     @property
     def volume(self):
-        return self.get('Volume')
+        volume = [0, 0]
+        try:
+            volume = self.get('Volume')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return volume
 
     @volume.setter
     def volume(self, volume):
@@ -345,11 +359,22 @@ class Device(object):
 
     @property
     def mute(self):
-        return self.get('Mute')
+        mute = False
+        try:
+            mute = self.get('Mute')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return mute
 
     @mute.setter
     def mute(self, mute):
-        self.bus.Set(self.path, 'Mute', mute, dbus_interface='org.freedesktop.DBus.Properties')
+        try:
+            self.bus.Set(self.path, 'Mute', mute, dbus_interface='org.freedesktop.DBus.Properties')
+    
+        except dbus.exceptions.DBusException:
+            pass
 
     @property
     def has_hardware_volume(self):
@@ -389,11 +414,34 @@ class Device(object):
 
     @property
     def active_port(self):
-        return self.get('ActivePort')
+        port = ''
+        try:
+            port = self.get('ActivePort')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return port
+
+    @active_port.setter
+    def active_port(self, name):
+        try:
+            self.bus.Set(self.path, 'ActivePort', name, dbus_interface='org.freedesktop.DBus.Properties')
+
+        except dbus.exceptions.DBusException:
+            pass
+
 
     @property
     def property_list(self):
-        return self.get('PropertyList')
+        property_list = {}
+        try:
+            property_list = self.get('PropertyList')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return property_list
 
     def suspend(self, suspend):
         self.bus.Suspend(suspend)
@@ -489,23 +537,54 @@ class Stream(object):
 
     @property
     def volume(self):
-        return self.get('Volume')
+        volume = [0, 0]
+        
+        try:
+            volume = self.get('Volume')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return volume
 
     @volume.setter
     def volume(self, volume):
-        self.bus.Set(self.path, 'Volume', volume, dbus_interface='org.freedesktop.DBus.Properties')
+        try:
+            self.bus.Set(self.path, 'Volume', volume, dbus_interface='org.freedesktop.DBus.Properties')
+
+        except dbus.exceptions.DBusException:
+            pass
 
     @property
     def volume_writable(self):
-        return self.get('VolumeWritable')
+        volume_writable = ''
+        try:
+            volume_writable = self.get('VolumeWritable')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return volume_writable
 
     @property
     def mute(self):
-        return self.get('Mute')
+        mute = False
+
+        try:
+           mute = self.get('Mute')
+
+        except dbus.exceptions.DBusException:
+            pass
+
+        return mute
 
     @mute.setter
     def mute(self, mute):
-        self.bus.Set(self.path, 'Mute', mute, dbus_interface='org.freedesktop.DBus.Properties')
+        try:
+            self.bus.Set(self.path, 'Mute', mute, dbus_interface='org.freedesktop.DBus.Properties')
+
+        except dbus.exceptions.DBusException:
+            pass
 
     @property
     def buffer_latency(self):
@@ -541,19 +620,19 @@ class Sample(object):
         self.get = ft.partial(self.bus.Get, self.path)
 
     @property
-    def Index(self):
+    def index(self):
         return self.get('Index')
 
     @property
-    def Name(self):
+    def name(self):
         return self.get('Name')
 
     @property
-    def SampleFormat(self):
+    def sample_format(self):
         return self.get('SampleFormat')
 
     @property
-    def SampleRate(self):
+    def sample_rate(self):
         return self.get('SampleRate')
 
     @property
@@ -561,19 +640,19 @@ class Sample(object):
         return self.get('Channels')
 
     @property
-    def DefaultVolume(self):
+    def default_volume(self):
         return self.get('DefaultVolume')
 
     @property
-    def Duration(self):
+    def duration(self):
         return self.get('Duration')
 
     @property
-    def Bytes(self):
+    def bytes(self):
         return self.get('Bytes')
 
     @property
-    def PropertyList(self):
+    def property_list(self):
         return self.get('PropertyList')
 
     def play(self, volume, property_list):
@@ -597,23 +676,23 @@ class Module(object):
         self.get = ft.partial(self.bus.Get, self.path)
 
     @property
-    def Index(self):
+    def index(self):
         return self.get('Index')
 
     @property
-    def Name(self):
+    def name(self):
         return self.get('Name')
 
     @property
-    def Arguments(self):
+    def arguments(self):
         return self.get('Arguments')
 
     @property
-    def UsageCounter(self):
+    def usage_counter(self):
         return self.get('UsageCounter')
 
     @property
-    def PropertyList(self):
+    def property_list(self):
         return self.get('PropertyList')
 
     def unload(self):

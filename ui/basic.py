@@ -20,6 +20,28 @@ import time
 import curses
 import sys
 
+def draw_info_window(win, info_data):
+        #This will create a centralize window
+        height, width = win.getmaxyx()
+        box = win.derwin(height/2, width/2, height/4, width/4)
+        hb_height, hb_width = box.getmaxyx()
+        box.hline(hb_height - 3, 1, curses.ACS_HLINE, hb_width - 2)
+        message = "Press i or p to continue"
+        box.addstr(hb_height - 2, hb_width/2 - len(message)/2, message )
+        box.box()
+
+        for line_number, info in enumerate(info_data):
+            if len(info) >= hb_width - 1:
+                info = info[:hb_width - 5] + '...'
+
+            if line_number < hb_height - 4:
+                box.addstr(line_number + 1, 1, info)
+
+            else:
+                break
+
+        box.refresh()
+
 class Welcome(object):
     """This class handle the Welcome Message"""
     
@@ -104,6 +126,10 @@ class TopMenu(object):
         self.height, self.width = self.win.getmaxyx()
         self.focus = -1
 
+    def resize_window(self, win):
+        self.win = win
+        self.height, self.width = self.win.getmaxyx()
+
     def draw(self):
         """Draw the top menu, and control the tab focus"""
         
@@ -132,10 +158,16 @@ class FooterMenu(object):
     def __init__(self, win):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
+
+    def resize_window(self, win):
+        self.win = win
+        self.height, self.width = self.win.getmaxyx()
         
     def draw(self):
-        _help = 'Per Tab help press h. Global help press H.'
-        self.win.addstr(1, self.width/2 - len(_help)/2, _help, curses.color_pair(1))
+        self.win.erase()
         self.win.box()
+        _help = 'Per Tab help press h. Global help press H.'
+        if len(_help) > self.height:
+            self.win.addstr(1, self.width/2 - len(_help)/2, _help, curses.color_pair(1))
         self.win.refresh()
         
