@@ -10,7 +10,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     except curses.error as e:
-        print 'Not enough screen space: %s' % (e)
+        print('Not enough screen space: %s' % (e))
         sys.exit(1)
     
 
