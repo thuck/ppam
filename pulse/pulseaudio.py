@@ -19,17 +19,48 @@
 ###############################################################################
 import dbus
 import functools as ft
+import subprocess
+import os
+from os import path
 
 def dbus_connection():
-    addr = dbus.SessionBus().get_object('org.PulseAudio1',
-                                        '/org/pulseaudio/server_lookup1').Get(
-                                              'org.PulseAudio.ServerLookup1',
-                                              'Address',
-                                              dbus_interface='org.freedesktop.DBus.Properties')
+    #Always try to start pulseaudio, if already started it returns 0 anyway
+    #also this doesn't create another process
+    start_pulseaudio = subprocess.Popen(['pulseaudio', '--start', '--log-target=syslog'],
+                        stdout=open('/dev/null', 'w'), 
+                        stderr=open('/dev/null', 'w')).wait()
 
-    conn = dbus.connection.Connection(addr)
+    if start_pulseaudio == 0:
+        home = path.expanduser("~")
+        pulseaudio_path = path.join(home, '.pulse')
+        addr = None
+    
+        if path.exists(pulseaudio_path):
+            for root, dirs, files in os.walk(pulseaudio_path):
+                for dir_ in dirs:
+                    full_path = path.join(pulseaudio_path, dir_)
+                    if ('runtime' in dir_ and
+                        path.islink(full_path) and
+                        path.exists(os.readlink(full_path))):
+                        addr = 'unix:path=%s' % (path.join(os.readlink(full_path), 'dbus-socket'))
+    
+        if addr is None:
+            try:
+                addr = dbus.SessionBus().get_object('org.PulseAudio1',
+                                            '/org/pulseaudio/server_lookup1').Get(
+                                                  'org.PulseAudio.ServerLookup1',
+                                                  'Address',
+                                                  dbus_interface='org.freedesktop.DBus.Properties')
+    
+            except dbus.exceptions.DBusException:
+                sys.exit(1)
+    
+        return dbus.connection.Connection(addr)
 
-    return conn
+    else:
+        #Include an error here
+        pass
+
 
 class Core(object):
     path = 'org.PulseAudio.Core1'
@@ -233,7 +264,11 @@ class Card(object):
 
     @active_profile.setter
     def active_profile(self, profile):
-        self.bus.Set(self.path, 'ActiveProfile', profile, dbus_interface='org.freedesktop.DBus.Properties')
+        try:
+            self.bus.Set(self.path, 'ActiveProfile', profile, dbus_interface='org.freedesktop.DBus.Properties')
+
+        except dbus.exceptions.DBusException:
+            pass
 
     @property
     def property_list(self):
@@ -747,5 +782,5 @@ if __name__ == '__main__':
     #this will be used for the tests
     conn = dbus_connection()
     core = Core(conn)
-    print core.sinks, core.interface_revision
+    print(core.sinks, core.interface_revision)
 
