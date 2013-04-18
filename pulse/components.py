@@ -17,7 +17,7 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ###############################################################################
-import pulseaudio as pa
+import pulse.pulseaudio as pa
 import dbus
 from itertools import cycle
 
@@ -155,7 +155,7 @@ class Device(object):
             while device.active_port != cports.next().port_name:
                 pass
 
-            device.active_port = device.active_port#cports.next().name
+            device.active_port = cports.next().port_name
 
     def change_port_previous(self, name):
         device = self._get_device(name)
@@ -164,7 +164,7 @@ class Device(object):
             while device.active_port != cports.next().port_name:
                 pass
 
-            device.active_port = device.active_port#cports.next().name
+            device.active_port = cports.next().port_name
 
     def get_devices(self):
         name = 'Unknown'
@@ -306,14 +306,79 @@ class InputDevices(Device):
         Device.__init__(self, 'source')
 
 class Cards(object):
-    def __init__(self, device_type):
+    def __init__(self):
         self.conn = pa.dbus_connection()
         self.core = pa.Core(self.conn)
         self.cards = []
-        self.profile = {}
+        self.dbus_cards = []
+        self.profiles = {}
+        self.info_data = None
 
-    def properties(self, name):
-        pass
+    def _get_card(self, card_name):
+        for card in self.cards:
+            if card.name == card_name:
+                return card
 
-    def info(self, name):
-        pass
+        return None
+
+    def _get_profile(self, card_name, profile_name):
+        for profile in self.profiles[card_name]:
+            if profile.name == profile_name:
+                return profile
+
+        return None
+
+    def _get_cards(self):
+        info = []
+        self.cards = [pa.Card(self.conn, card) for card in self.core.cards]
+        for card in self.cards:
+            profiles = [pa.CardProfile(self.conn, profile)
+                                              for profile in card.profiles]
+            self.profiles[card.name] = profiles
+
+            for profile in profiles:
+                active = True if profile.profile_name == card.active_profile else False
+                info.append((card.name, profile.name, active))
+
+        return info
+
+        
+
+    def get_cards(self):
+        current_cards = [card for card in self.core.cards]
+
+        if not self.dbus_cards == current_cards:
+            self.dbus_cards = current_cards
+            self.info_data = self._get_cards()
+
+
+        return self.info_data
+
+    def info(self, info):
+        card = self._get_card(info[0])
+        profile = self._get_profile(info[0], info[1])
+        return ('Card Info',
+                'Index: %s' % (card.index),
+                'Driver: %s' % (card.driver),
+                'Sinks: %s' % (','.join(sink for sink in card.sinks)),
+                '',
+                'Profile Info',
+                'Index: %s' % (profile.index),
+                'Description: %s' % (profile.description),
+                'Sinks: %s' % (profile.sinks),
+                'Priority: %s' % (profile.priority))
+
+    def properties(self, info):
+        card = self._get_card(info[0])
+        profile = self._get_profile(info[0], info[1])
+
+        return sorted(['%s: %s' % (key, ''.join(str(byte) for byte in value)[:-1])
+                for key, value in card.property_list.items()])
+
+
+
+
+
+
+
+ 
