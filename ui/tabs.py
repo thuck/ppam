@@ -16,14 +16,16 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ###############################################################################
-from pulse import pulseaudio as pa
-from pulse import components as co
-from itertools import cycle
-from functools import partial
+import dbus
 import curses
 from curses import KEY_UP, KEY_DOWN, KEY_ENTER
-import dbus
-from basic import draw_info_window
+from itertools import cycle
+from functools import partial
+from ui.basic import draw_info_window
+from ui.basic import draw_help_window
+from pulse import pulseaudio as pa
+from pulse import components as co
+
 
 class GenericStream(object):
     def __init__(self, win, footer, stream_type, name, conf = None):
@@ -40,20 +42,35 @@ class GenericStream(object):
         self.playback = getattr(co, stream_type)()
         self.streams = []
         self.info_window = False
+        self.type_of_info = None
 
     def resize_window(self, win):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
 
+    def _update_info_window(self, info):
+        if self.type_of_info == 'p':
+            self.info_window_data = partial(self.playback.properties, info)
+
+        elif self.type_of_info == 'i':
+            self.info_window_data = partial(self.playback.info, info)
+
     def update(self, char):
+        if self.selected_item > self.max_item:
+                self.selected_item = self.max_item
+
         if char == KEY_UP and self.selected_item > 0:
             self.selected_item -= 1
 
         elif char == KEY_DOWN and self.selected_item < self.max_item:
             self.selected_item += 1
 
+        elif char in (ord('h'), ):
+            draw_help_window(self.win, self.help)
+
         if self.streams:
             pid = self.streams[self.selected_item][1]
+            self._update_info_window(pid)
             if char in (ord('+'), ):
                 self.playback.increase_volume(pid)
 
@@ -76,15 +93,14 @@ class GenericStream(object):
                 self.playback.decrease_right_volume(pid)
 
             elif char in (ord('p'), ):
+                self.type_of_info = 'p'
                 self.info_window = not self.info_window
                 self.info_window_data = partial(self.playback.properties, pid)
 
             elif char in (ord('i'), ):
+                self.type_of_info = 'i'
                 self.info_window = not self.info_window
                 self.info_window_data = partial(self.playback.info, pid)
-
-            if self.selected_item > self.max_item:
-                self.selected_item = self.max_item
 
 
     def draw(self):
@@ -115,10 +131,10 @@ class GenericStream(object):
 
         self.max_item = line_number
 
-        self.win.refresh()
-
         if self.info_window:
             draw_info_window(self.win, info_data)
+
+        self.win.refresh()
 
 
 class TabPlayback(GenericStream):
@@ -145,20 +161,41 @@ class GenericDevice(object):
         self.device = getattr(co, device_type)()
         self.devices = []
         self.info_window = False
+        self.type_of_info = None
+
+    def _show_help(self):
+        pass
 
     def resize_window(self, win):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
 
+    def _update_info_window(self, info):
+        if self.type_of_info == 'p':
+            self.info_window_data = partial(self.device.properties, info)
+
+        elif self.type_of_info == 'i':
+            self.info_window_data = partial(self.device.info, info)
+
+
     def update(self, char):
+        if self.selected_item > self.max_item:
+                self.selected_item = self.max_item
+
         if char == KEY_UP and self.selected_item > 0:
             self.selected_item -= 1
 
         elif char == KEY_DOWN and self.selected_item < self.max_item:
             self.selected_item += 1
 
+        elif char in (ord('h'), ):
+            draw_help_window(self.win, self.help)
+
+
         if self.devices:
             name = self.devices[self.selected_item][0]
+            self._update_info_window(name)
+            
             if char in (ord('+'), ):
                 self.device.increase_volume(name)
 
@@ -181,10 +218,12 @@ class GenericDevice(object):
                 self.device.decrease_right_volume(name)
 
             elif char in (ord('p'), ):
+                self.type_of_info = 'p'
                 self.info_window = not self.info_window
                 self.info_window_data = partial(self.device.properties, name)
 
             elif char in (ord('i'), ):
+                self.type_of_info = 'i'
                 self.info_window = not self.info_window
                 self.info_window_data = partial(self.device.info, name)
 
@@ -193,10 +232,6 @@ class GenericDevice(object):
 
             elif char in (ord('k'), ):
                 self.device.change_port_previous(name)
-
-            if self.selected_item > self.max_item:
-                self.selected_item = self.max_item
-
 
     def draw(self):
         self.devices = self.device.get_devices()
@@ -237,10 +272,10 @@ class GenericDevice(object):
 
         self.max_item = line_number
 
-        self.win.refresh()
-
         if self.info_window:
             draw_info_window(self.win, info_data)
+
+        self.win.refresh()
 
 
 class TabOutputDevices(GenericDevice):
@@ -257,56 +292,88 @@ class TabCards(object):
         self.height, self.width = self.win.getmaxyx()
         self.name = 'Cards'
         self.conf = conf
-        self.help = ["Cards"]
+        self.help = ["Nothing here"]
         self.conn = pa.dbus_connection()
         self.core = pa.Core(self.conn)
-        self.selected_item = 1
-        self.max_item = 1
-        self.footer = footer
+        self.card = co.Cards()
+        self.selected_item = 0
+        self.max_item = 0
+        self.info_window = False
+        self.type_of_info = None
 
-    def resize_window(self, win, footer):
+    def _show_help(self):
+        pass
+
+    def resize_window(self, win):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
 
-    def update(self, char):
+    def _update_info_window(self, info):
+            if self.type_of_info == 'p':
+                self.info_window_data = partial(self.card.properties, info)
 
-        if char == KEY_UP and self.selected_item > 1:
+            elif self.type_of_info == 'i':
+                self.info_window_data = partial(self.card.info, info)
+
+    def update(self, char):
+        if self.selected_item > self.max_item:
+            self.selected_item = self.max_item
+
+        info = self.cards[self.selected_item]
+        self._update_info_window(info)
+
+        if char == KEY_UP and self.selected_item > 0:
             self.selected_item -= 1
 
         elif char == KEY_DOWN and self.selected_item < self.max_item:
             self.selected_item += 1
 
+        elif char in (ord('h'), ):
+            draw_help_window(self.win, self.help)
+
         elif char == ord('a'):
             #testing code - Doesn't work
-            self.cards[0].active_profile = self.profiles[self.selected_item].profile_name
+        #    self.cards[0].active_profile = self.profiles[self.selected_item].profile_name
+            pass
 
-        if self.selected_item > self.max_item:
-            self.selected_item = self.max_item
+        elif char in (ord('p'), ):
+            self.type_of_info = 'p'
+            self.info_window = not self.info_window
+            self.info_window_data = partial(self.card.properties, info)
+
+        elif char in (ord('i'), ):
+            self.type_of_info = 'i'
+            self.info_window = not self.info_window
+            self.info_window_data = partial(self.card.info, info)
 
     def draw(self):
-        self.cards = [pa.Card(self.conn, card) for card in self.core.cards]
+        self.cards = self.card.get_cards()
+        line_number = 0
+        if self.info_window:
+            info_data = self.info_window_data()
+
         self.win.erase()
         self.win.box()
-        header_number = 0
-        line_number = 0
 
-        for card in self.cards:
-            self.profiles = [pa.CardProfile(self.conn, profile) for profile in card.profiles]
-            active_profile = card.active_profile
-            header_number += 1
-            self.win.addstr(header_number, 1, card.name)
-            for profile in self.profiles:
-                line_number += 1
-                name = '%s %s ' % (profile.name, '[A]') if profile.profile_name == card.active_profile else profile.name
-                self.win.addstr(header_number+line_number, 4, name)
+        for line_number, card in enumerate(self.cards):
+            (card_name,
+            profile_name,
+            active) = card
+            line = '[%s] %s' % (card_name, profile_name.replace('output', 'Out').replace('input', 'In').replace('+', ' '))
 
-                if self.selected_item == line_number:
-                    self.win.addstr(header_number+line_number, 4, name, curses.color_pair(1))
+            if active:
+                line = '%s [A]' % (line)
 
-                else:
-                    self.win.addstr(header_number+line_number, 4, name)
-                
+            if self.selected_item == line_number:
+                self.win.addstr(line_number + 1, 1, line, curses.color_pair(1))
+
+            else:
+                self.win.addstr(line_number + 1, 1, line)
+
         self.max_item = line_number
+
+        if self.info_window:
+            draw_info_window(self.win, info_data)
 
         self.win.refresh()
 
