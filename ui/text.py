@@ -18,8 +18,8 @@
 ###############################################################################
 import curses
 import sys
-import basic
-import tabs
+import ui.basic as basic
+import ui.tabs as tabs
 import time
 import string
 
@@ -60,7 +60,7 @@ def main(stdscr):
     tab.draw()
     
     stdscr.refresh()
-    stdscr.timeout(250) #Avoid too many refreshes, but will keep the clock fine
+    stdscr.timeout(350) #Avoid too many refreshes
 
     while True:        
         c = stdscr.getch()
@@ -72,24 +72,16 @@ def main(stdscr):
 
             top_menu.resize_window(menu)
             footer_menu.resize_window(footer)
-            tab.resize_window(body)
+            for tab in tab_list:
+                tab.resize_window(body)
 
-            top_menu.draw()
+            tab = top_menu.draw()
             footer_menu.draw()
             tab.draw()
  
-        #This is madness, in gnome-terminal the F1 is captured by the window
-        #before it arrives to the curses (konsole is ok)
-        #gnome-terminal is a crap
         elif c in (curses.KEY_HELP, curses.KEY_F1, ord('H')):
             _help.draw()
             
-        elif c in (ord('h'),):
-            _help.draw(tab.help)
-        
-        #TODO: Include a exit cleaner if needed
-        #TODO: Include the ctrl+c as a valid exit
-        #The event library must be used (it will be a pain)
         elif c in (ord('q'),):
             break
             
@@ -100,7 +92,6 @@ def main(stdscr):
         else:
             tab.update(c)
 
-        #if tab is not None:
         tab.draw()
             
         footer_menu.draw()
