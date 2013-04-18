@@ -21,13 +21,33 @@ import curses
 import sys
 
 def draw_info_window(win, info_data):
+        #The cake is a lie
+        height, width = win.getmaxyx()
+        box = win.derwin(height - 2, width//2 - 1, 1, width//2)
+        hb_height, hb_width = box.getmaxyx()
+        box.erase()
+        box.border(' ', ' ', ' ', ' ')
+        for line_number, info in enumerate(info_data):
+            if len(info) >= hb_width - 1:
+                info = info[:hb_width - 5] + '...'
+
+            if line_number < hb_height - 4:
+                box.addstr(line_number + 1, 1, info)
+
+            else:
+                break
+
+        box.refresh()
+
+def draw_help_window(win, info_data):
         #This will create a centralize window
         height, width = win.getmaxyx()
-        box = win.derwin(height/2, width/2, height/4, width/4)
+        box = win.derwin(height//2, width//2, height//4, width//4)
         hb_height, hb_width = box.getmaxyx()
+        box.erase()
         box.hline(hb_height - 3, 1, curses.ACS_HLINE, hb_width - 2)
-        message = "Press i or p to continue"
-        box.addstr(hb_height - 2, hb_width/2 - len(message)/2, message )
+        message = "Press any key to continue"
+        box.addstr(hb_height - 2, hb_width//2 - len(message)//2, message )
         box.box()
 
         for line_number, info in enumerate(info_data):
@@ -41,6 +61,8 @@ def draw_info_window(win, info_data):
                 break
 
         box.refresh()
+        box.timeout(-1)
+        box.getch()
 
 class Welcome(object):
     """This class handle the Welcome Message"""
@@ -69,12 +91,12 @@ class Help(object):
     def draw(self, tab = None):        
         self.win.box()
         #This will create a centralize window
-        help_box = self.win.derwin(self.height/2, self.width/2, self.height/4, self.width/4)
+        help_box = self.win.derwin(self.height//2, self.width//2, self.height//4, self.width//4)
         hb_height, hb_width = help_box.getmaxyx()
         help_box.erase()
         help_box.hline(hb_height - 3, 1, curses.ACS_HLINE, hb_width - 2)
         message = "Press any key to continue"
-        help_box.addstr(hb_height - 2, hb_width/2 - len(message)/2, message )
+        help_box.addstr(hb_height - 2, hb_width//2 - len(message)//2, message )
         help_box.box()
         if not tab:
             help_box.addstr(1, 1, "Global Help")
@@ -168,6 +190,6 @@ class FooterMenu(object):
         self.win.box()
         _help = 'Per Tab help press h. Global help press H.'
         if len(_help) > self.height:
-            self.win.addstr(1, self.width/2 - len(_help)/2, _help, curses.color_pair(1))
+            self.win.addstr(1, self.width//2 - len(_help)//2, _help, curses.color_pair(1))
         self.win.refresh()
         
