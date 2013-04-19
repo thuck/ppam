@@ -101,10 +101,10 @@ class GenericStream(object):
                 self.type_of_info = 'i'
                 self.info_window_data = self.playback.info(pid)
 
-            elif char == KEY_UP and self.selected_item > 0:
+            elif char in (KEY_UP, ord('k')) and self.selected_item > 0:
                 self.selected_item -= 1
 
-            elif char == KEY_DOWN and self.selected_item < self.max_item:
+            elif char in (KEY_DOWN, ord('j')) and self.selected_item < self.max_item:
                 self.selected_item += 1
 
     def draw(self):
@@ -223,16 +223,16 @@ class GenericDevice(object):
                 self.type_of_info = 'i'
                 self.info_window_data = self.device.info(name)
 
-            elif char in (ord('l'), ):
+            elif char in (ord('n'), ):
                 self.device.change_port_next(name)
 
-            elif char in (ord('k'), ):
+            elif char in (ord('p'), ):
                 self.device.change_port_previous(name)
 
-            elif char == KEY_UP and self.selected_item > 0:
+            elif char in (KEY_UP, ord('k')) and self.selected_item > 0:
                 self.selected_item -= 1
 
-            elif char == KEY_DOWN and self.selected_item < self.max_item:
+            elif char in (KEY_DOWN, ord('j')) and self.selected_item < self.max_item:
                 self.selected_item += 1
 
 
@@ -346,10 +346,10 @@ class TabCards(object):
                 self.type_of_info = 'i'
                 self.info_window_data = self.card.info(info)
 
-            elif char == KEY_UP and self.selected_item > 0:
+            elif char in (KEY_UP, ord('k')) and self.selected_item > 0:
                 self.selected_item -= 1
 
-            elif char == KEY_DOWN and self.selected_item < self.max_item:
+            elif char in (KEY_DOWN, ord('j')) and self.selected_item < self.max_item:
                 self.selected_item += 1
 
     def draw(self):

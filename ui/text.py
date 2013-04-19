@@ -71,6 +71,17 @@ def main(stdscr):
             
         elif c in (ord('q'),):
             break
+
+        elif c in (curses.KEY_LEFT, ord('h'),):
+            if top_menu.focus - 1 in top_menu.tabs_dict:
+                top_menu.focus -= 1
+                tab = top_menu.draw()
+
+        elif c in (curses.KEY_RIGHT, ord('l'),):
+            if top_menu.focus + 1 in top_menu.tabs_dict:
+                top_menu.focus += 1
+                tab = top_menu.draw()
+
             
         elif c in range(256) and chr(c) in string.printable[:10] and int(chr(c)) in top_menu.tabs_dict:
             top_menu.focus = int(chr(c))
