@@ -191,7 +191,7 @@ class FooterMenu(object):
     def draw(self):
         self.win.erase()
         self.win.box()
-        _help = 'Per Tab help press h. Global help press H.'
+        _help = 'Per Tab help press H.'
         if len(_help) > self.height:
             self.win.addstr(1, self.width//2 - len(_help)//2, _help, curses.color_pair(1))
         self.win.refresh()

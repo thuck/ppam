@@ -54,15 +54,15 @@ class GenericStream(object):
         elif self.type_of_info == 'i':
             self.info_window_data = self.playback.info(pid)
 
-        elif self.type_of_info == 'h':
+        elif self.type_of_info == 'H':
             self.info_window_data = self.help
 
     def update(self, char):
         if self.selected_item > self.max_item:
                 self.selected_item = self.max_item
 
-        if char in (ord('h'), ):
-            self.type_of_info = 'h'
+        if char in (ord('H'), ):
+            self.type_of_info = 'H'
             self.info_window_data = self.help
 
         elif char in (ord('c'), ):
@@ -175,15 +175,15 @@ class GenericDevice(object):
         elif self.type_of_info == 'i':
             self.info_window_data = self.device.info(info)
 
-        elif self.type_of_info == 'h':
+        elif self.type_of_info == 'H':
             self.info_window_data = self.help
 
     def update(self, char):
         if self.selected_item > self.max_item:
                 self.selected_item = self.max_item
 
-        if char in (ord('h'), ):
-            self.type_of_info = 'h'
+        if char in (ord('H'), ):
+            self.type_of_info = 'H'
             self.info_window_data = self.help
 
         elif char in (ord('c'), ):
@@ -313,15 +313,15 @@ class TabCards(object):
             elif self.type_of_info == 'i':
                 self.info_window_data = self.card.info(info)
 
-            elif self.type_of_info == 'h':
+            elif self.type_of_info == 'H':
                 self.info_window_data = self.help
 
     def update(self, char):
         if self.selected_item > self.max_item:
             self.selected_item = self.max_item
 
-        if char in (ord('h'), ):
-            self.type_of_info = 'h'
+        if char in (ord('H'), ):
+            self.type_of_info = 'H'
             self.info_window_data = self.help
 
         elif char in (ord('c'), ):

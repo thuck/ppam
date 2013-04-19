@@ -34,27 +34,17 @@ def main(stdscr):
     body = stdscr.subwin(height - 6, width, 3, 0)
     footer = stdscr.subwin(3, width, height - 3, 0)
     
-#    tab = basic.Welcome(body, footer)
-    error = basic.ERROR(body, footer)
-    
-    #*Each tab is initialize here, and the configuration
-    #is passed to them
-    #Each tab must handle the configuration, plus body and footer*
-    #**If the tab will block (waiting the user input) it must
-    #handle the resize error, and also update the footer**
-
-    tab_list = [tabs.TabPlayback(body, footer),
-                tabs.TabRecord(body, footer),
-                tabs.TabOutputDevices(body, footer),
-                tabs.TabInputDevices(body, footer),
-                tabs.TabCards(body, footer)]
+    tab_list = [tabs.TabPlayback(body),
+                tabs.TabRecord(body),
+                tabs.TabOutputDevices(body),
+                tabs.TabInputDevices(body),
+                tabs.TabCards(body)]
               
     top_menu = basic.TopMenu(menu, tab_list)
     footer_menu = basic.FooterMenu(footer)
     top_menu.draw()
     footer_menu.draw()
 
-    _help = basic.Help(body, footer_menu)    
     top_menu.focus = 1
     tab = top_menu.draw()
     tab.draw()
@@ -78,9 +68,6 @@ def main(stdscr):
             tab = top_menu.draw()
             footer_menu.draw()
             tab.draw()
- 
-        elif c in (curses.KEY_HELP, curses.KEY_F1, ord('H')):
-            _help.draw()
             
         elif c in (ord('q'),):
             break
