@@ -28,11 +28,10 @@ from pulse import components as co
 
 
 class GenericStream(object):
-    def __init__(self, win, footer, stream_type, name, conf = None):
+    def __init__(self, win, stream_type, name):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = name
-        self.conf = conf
         self.help = ["+/- to Increase and decrease volume",
                      ",/. to Increase and decrease right volume",
                      "</> to Increase and decrease left volume",
@@ -141,20 +140,19 @@ class GenericStream(object):
 
 
 class TabPlayback(GenericStream):
-    def __init__(self, win, footer, conf = None):
-        GenericStream.__init__(self, win, footer, 'Playback', 'Playback', conf)
+    def __init__(self, win):
+        GenericStream.__init__(self, win, 'Playback', 'Playback')
 
 class TabRecord(GenericStream):
-    def __init__(self, win, footer, conf = None):
-        GenericStream.__init__(self, win, footer, 'Record', 'Record', conf)
+    def __init__(self, win):
+        GenericStream.__init__(self, win, 'Record', 'Record')
 
     
 class GenericDevice(object):
-    def __init__(self, win, footer, device_type, name, conf = None):
+    def __init__(self, win, device_type, name):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = name
-        self.conf = conf
         self.help = ["+/- to Increase and decrease volume",
                      ",/. to Increase and decrease right volume",
                      "</> to Increase and decrease left volume",
@@ -282,19 +280,18 @@ class GenericDevice(object):
 
 
 class TabOutputDevices(GenericDevice):
-    def __init__(self, win, footer, conf = None):
-        GenericDevice.__init__(self, win, footer, 'OutputDevices', 'Output Devices', conf = None)
+    def __init__(self, win):
+        GenericDevice.__init__(self, win, 'OutputDevices', 'Output Devices')
 
 class TabInputDevices(GenericDevice):
-    def __init__(self, win, footer, conf = None):
-        GenericDevice.__init__(self, win, footer, 'InputDevices', 'Input Devices', conf = None)
+    def __init__(self, win):
+        GenericDevice.__init__(self, win, 'InputDevices', 'Input Devices')
 
 class TabCards(object):
-    def __init__(self, win, footer, conf = None):
+    def __init__(self, win):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = 'Cards'
-        self.conf = conf
         self.help = ["Nothing here"]
         self.conn = pa.dbus_connection()
         self.core = pa.Core(self.conn)
@@ -383,5 +380,3 @@ class TabCards(object):
             draw_info_window(self.win, self.info_window_data)
 
         self.win.refresh()
-
-
