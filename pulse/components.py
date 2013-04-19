@@ -117,7 +117,7 @@ class Stream(object):
 
     def info(self, pid):
         stream = self._get_app_stream(pid)
-        return ['Index: %s' % stream.index,
+        return ('Index: %s' % stream.index,
                 'Driver: %s' % stream.driver,
                 'Owner Module: %s' % stream.owner_module,
                 'Client: %s' % stream.client,
@@ -128,7 +128,7 @@ class Stream(object):
                 'Volume Writable: %s' % stream.volume_writable,
                 'Buffer Latency: %s' % stream.buffer_latency,
                 'Device Latency: %s' % stream.device_latency,
-                'Resample Method: %s' % stream.resample_method]
+                'Resample Method: %s' % stream.resample_method)
 
 
 class Playback(Stream):
@@ -275,7 +275,7 @@ class Device(object):
 
     def info(self, name):
         device = self._get_device(name)
-        return ['Index: %s' % device.index,
+        return ('Index: %s' % device.index,
                 'Name: %s' % device.name,
                 'Driver: %s' % device.driver,
                 'Owner Module: %s' % device.owner_module,
@@ -294,7 +294,7 @@ class Device(object):
                 'Latency: %s' % device.latency,
 #                'Is Hardware Device: %s' % device.is_hardware_device,
 #                'Is Network Device: %s' % device.is_network_device,
-                'State: %s' % device.state]
+                'State: %s' % device.state)
 
 
 class OutputDevices(Device):
@@ -374,11 +374,3 @@ class Cards(object):
 
         return sorted(['%s: %s' % (key, ''.join(str(byte) for byte in value)[:-1])
                 for key, value in card.property_list.items()])
-
-
-
-
-
-
-
- 
