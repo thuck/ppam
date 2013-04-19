@@ -26,6 +26,9 @@ def draw_info_window(win, info_data):
         box = win.derwin(height - 2, width//2 - 1, 1, width//2)
         hb_height, hb_width = box.getmaxyx()
         box.erase()
+        box.hline(hb_height - 3, 1, curses.ACS_HLINE, hb_width - 2)
+        message = "Press c to continue"
+        box.addstr(hb_height - 2, hb_width//2 - len(message)//2, message)
         box.border(' ', ' ', ' ', ' ')
         for line_number, info in enumerate(info_data):
             if len(info) >= hb_width - 1:
