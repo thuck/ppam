@@ -190,9 +190,14 @@ class Device(object):
                 else:
                     tmp_port.append((False, port.name))
 
-            pack = (name, round(device.volume[0]*100.0/65536.0),
-            round(device.volume[1]*100.0/65536.0),
-            device.mute, tmp_port)
+            if len(device.volume) > 1:
+                pack = (name, round(device.volume[0]*100.0/65536.0),
+                        round(device.volume[1]*100.0/65536.0),
+                        device.mute, tmp_port)
+
+            else:
+                pack = (name, round(device.volume[0]*100.0/65536.0),
+                        device.mute, tmp_port)
 
             info.append(pack)
 
@@ -206,7 +211,11 @@ class Device(object):
         return None
 
     def _set_volume(self, device, volume):
-        device.volume = [dbus.UInt32(volume[0]), dbus.UInt32(volume[1])]
+        if len(volume) == 2:
+            device.volume = [dbus.UInt32(volume[0]), dbus.UInt32(volume[1])]
+
+        else:
+            device.volume = [dbus.UInt32(volume[0])]
 
     def increase_volume(self, name):
         device = self._get_device(name)
@@ -214,14 +223,17 @@ class Device(object):
         if device:
             volume = device.volume
             left = volume[0] + rate if volume[0] + rate < 98304 else 98304
-            right = volume[1] + rate if volume[1] + rate < 98304 else 98304
-            self._set_volume(device, [left, right])
-             
+            if len(device.volume) > 1:
+                right = volume[1] + rate if volume[1] + rate < 98304 else 98304
+                self._set_volume(device, [left, right])
+
+            else:
+                self._set_volume(device, [left])
 
     def increase_left_volume(self, name):
         device = self._get_device(name)
         rate = 65536.0/100.0
-        if stream:
+        if stream and len(device.volume) > 1:
             volume = device.volume
             left = volume[0] + rate if volume[0] + rate < 98304 else 98304
             right = volume[1]
@@ -230,7 +242,7 @@ class Device(object):
     def increase_right_volume(self, name):
         device = self._get_device(name)
         rate = 65536.0/100.0
-        if device:
+        if device and len(device.volume) > 1:
             volume = device.volume
             left = volume[0]
             right = volume[1] + rate if volume[1] + rate < 98304 else 98304
@@ -242,13 +254,17 @@ class Device(object):
         if device:
             volume = device.volume
             left = volume[0] - rate if volume[0] - rate > 0 else 0
-            right = volume[1] - rate if volume[1] - rate > 0 else 0
-            self._set_volume(device, [left, right])
+            if len(device.volume) > 1:
+                right = volume[1] - rate if volume[1] - rate > 0 else 0
+                self._set_volume(device, [left, right])
+
+            else:
+                self._set_volume(device, [left])
 
     def decrease_left_volume(self, name):
         device = self._get_device(name)
         rate = 65536.0/100.0
-        if device:
+        if device and len(device.volume) > 1:
             volume = device.volume
             left = volume[0] - rate if volume[0] - rate > 0 else 0
             right = volume[1]
@@ -257,7 +273,7 @@ class Device(object):
     def decrease_right_volume(self, name):
         device = self._get_device(name)
         rate = 65536.0/100.0
-        if device:
+        if device and len(device.volume) > 1:
             volume = device.volume
             left = volume[0] 
             right = volume[1] - rate if volume[1] - rate > 0 else 0

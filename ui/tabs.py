@@ -244,12 +244,20 @@ class GenericDevice(object):
         self.win.box()
 
         for line_number, device in enumerate(self.devices):
-            (device_name,
-            volume_left,
-            volume_right,
-            mute,
-            port) = device
-            line = '[%s] L:%i%% R:%i%%' % (device_name.split('.')[-1].capitalize(), volume_left, volume_right)
+            if len(device) == 5:
+                (device_name,
+                volume_left,
+                volume_right,
+                mute,
+                port) = device
+                line = '[%s] L:%i%% R:%i%%' % (device_name.split('.')[-1].capitalize(), volume_left, volume_right)
+
+            else:
+                (device_name,
+                volume,
+                mute,
+                port) = device
+                line = '[%s] M:%i%%' % (device_name.split('.')[-1].capitalize(), volume)
 
             if port:
                 str_port = ''
