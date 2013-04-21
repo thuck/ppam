@@ -9,8 +9,8 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         sys.exit(0)
 
-    except curses.error as e:
-        print('Not enough screen space: %s' % (e))
+    except curses.error as err:
+        print('Not enough screen space: %s' % (err))
         sys.exit(1)
     
 

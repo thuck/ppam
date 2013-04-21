@@ -16,13 +16,9 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ###############################################################################
-import dbus
 import curses
-from curses import KEY_UP, KEY_DOWN, KEY_ENTER
-from itertools import cycle
-from functools import partial
+from curses import KEY_UP, KEY_DOWN
 from ui.basic import draw_info_window
-from ui.basic import draw_help_window
 from pulse import pulseaudio as pa
 from pulse import components as co
 
@@ -59,7 +55,7 @@ class GenericStream(object):
 
     def update(self, char):
         if self.selected_item > self.max_item:
-                self.selected_item = self.max_item
+            self.selected_item = self.max_item
 
         if char in (ord('H'), ):
             self.type_of_info = 'H'
@@ -76,7 +72,7 @@ class GenericStream(object):
                 self.playback.increase_volume(pid)
 
             elif char in (ord('-'), ):
-                    self.playback.decrease_volume(pid)
+                self.playback.decrease_volume(pid)
 
             elif char in (ord('m'),):
                 self.playback.mute(pid)
@@ -104,7 +100,8 @@ class GenericStream(object):
             elif char in (KEY_UP, ord('k')) and self.selected_item > 0:
                 self.selected_item -= 1
 
-            elif char in (KEY_DOWN, ord('j')) and self.selected_item < self.max_item:
+            elif (char in (KEY_DOWN, ord('j')) and 
+                  self.selected_item < self.max_item):
                 self.selected_item += 1
 
     def draw(self):
@@ -120,7 +117,8 @@ class GenericStream(object):
             volume_left,
             volume_right,
             mute) = stream
-            line = '[%s] L:%i%% R:%i%% (%s)' % (app_name, volume_left, volume_right, app_pid)
+            line = '[%s] L:%i%% R:%i%% (%s)' % (app_name, volume_left,
+                                                volume_right, app_pid)
 
             if mute:
                 line = '%s [M]' % (line)
@@ -180,7 +178,7 @@ class GenericDevice(object):
 
     def update(self, char):
         if self.selected_item > self.max_item:
-                self.selected_item = self.max_item
+            self.selected_item = self.max_item
 
         if char in (ord('H'), ):
             self.type_of_info = 'H'
@@ -198,7 +196,7 @@ class GenericDevice(object):
                 self.device.increase_volume(name)
 
             elif char in (ord('-'), ):
-                    self.device.decrease_volume(name)
+                self.device.decrease_volume(name)
 
             elif char in (ord('m'),):
                 self.device.mute(name)
@@ -232,7 +230,8 @@ class GenericDevice(object):
             elif char in (KEY_UP, ord('k')) and self.selected_item > 0:
                 self.selected_item -= 1
 
-            elif char in (KEY_DOWN, ord('j')) and self.selected_item < self.max_item:
+            elif (char in (KEY_DOWN, ord('j')) and 
+                  self.selected_item < self.max_item):
                 self.selected_item += 1
 
 
@@ -250,23 +249,29 @@ class GenericDevice(object):
                 volume_right,
                 mute,
                 port) = device
-                line = '[%s] L:%i%% R:%i%%' % (device_name.split('.')[-1].capitalize(), volume_left, volume_right)
+                line = '[%s] L:%i%% R:%i%%' % (
+                                    device_name.split('.')[-1].capitalize(),
+                                    volume_left, volume_right)
 
             else:
                 (device_name,
                 volume,
                 mute,
                 port) = device
-                line = '[%s] M:%i%%' % (device_name.split('.')[-1].capitalize(), volume)
+                line = '[%s] M:%i%%' % (
+                                    device_name.split('.')[-1].capitalize(),
+                                    volume)
 
             if port:
                 str_port = ''
                 for i in port:
                     if i[0] == True:
-                        str_port = '%s (%s)' % (str_port, i[1].split('-')[-1].capitalize())
+                        str_port = '%s (%s)' % (
+                                str_port, i[1].split('-')[-1].capitalize())
 
                     else:
-                        str_port = '%s %s' % (str_port, i[1].split('-')[-1].capitalize())
+                        str_port = '%s %s' % (
+                                str_port, i[1].split('-')[-1].capitalize())
 
                 line = '%s [%s]' % (line, str_port.strip())
 
@@ -315,14 +320,14 @@ class TabCards(object):
         self.height, self.width = self.win.getmaxyx()
 
     def _update_info_window(self, info):
-            if self.type_of_info == 'p':
-                self.info_window_data = self.card.properties(info)
+        if self.type_of_info == 'p':
+            self.info_window_data = self.card.properties(info)
 
-            elif self.type_of_info == 'i':
-                self.info_window_data = self.card.info(info)
+        elif self.type_of_info == 'i':
+            self.info_window_data = self.card.info(info)
 
-            elif self.type_of_info == 'H':
-                self.info_window_data = self.help
+        elif self.type_of_info == 'H':
+            self.info_window_data = self.help
 
     def update(self, char):
         if self.selected_item > self.max_item:
@@ -343,7 +348,8 @@ class TabCards(object):
     
             if char == ord('a'):
                 #testing code - Doesn't work
-            #    self.cards[0].active_profile = self.profiles[self.selected_item].profile_name
+            #    self.cards[0].active_profile =
+            #       self.profiles[self.selected_item].profile_name
                 pass
     
             elif char in (ord('p'), ):
@@ -357,7 +363,8 @@ class TabCards(object):
             elif char in (KEY_UP, ord('k')) and self.selected_item > 0:
                 self.selected_item -= 1
 
-            elif char in (KEY_DOWN, ord('j')) and self.selected_item < self.max_item:
+            elif (char in (KEY_DOWN, ord('j')) and
+                  self.selected_item < self.max_item):
                 self.selected_item += 1
 
     def draw(self):

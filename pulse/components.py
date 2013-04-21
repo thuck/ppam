@@ -21,6 +21,7 @@ import pulse.pulseaudio as pa
 import dbus
 from itertools import cycle
 
+
 class Stream(object):
 
     def __init__(self, stream_type):
@@ -35,7 +36,7 @@ class Stream(object):
         return [(''.join(str(byte) for byte in stream.property_list['application.name'])[:-1],
             ''.join(str(byte) for byte in stream.property_list['application.process.id'])[:-1],
             round(stream.volume[0]*100.0/65536.0),
-            round(stream.volume[1]*100.0/65536.0), 
+            round(stream.volume[1]*100.0/65536.0),
             stream.mute) for stream in self.streams]
 
     def _get_app_stream(self, pid):
@@ -57,7 +58,6 @@ class Stream(object):
             left = volume[0] + rate if volume[0] + rate < 98304 else 98304
             right = volume[1] + rate if volume[1] + rate < 98304 else 98304
             self._set_volume(stream, [left, right])
-             
 
     def increase_left_volume(self, pid):
         stream = self._get_app_stream(pid)
@@ -86,7 +86,6 @@ class Stream(object):
             right = volume[1] - rate if volume[1] - rate > 0 else 0
             self._set_volume(stream, [left, right])
 
-
     def decrease_left_volume(self, pid):
         stream = self._get_app_stream(pid)
         rate = 65536.0/100.0
@@ -101,7 +100,7 @@ class Stream(object):
         rate = 65536.0/100.0
         if stream:
             volume = stream.volume
-            left = volume[0] 
+            left = volume[0]
             right = volume[1] - rate if volume[1] - rate > 0 else 0
             self._set_volume(stream, [left, right])
 
@@ -111,7 +110,7 @@ class Stream(object):
 
     def properties(self, pid):
         stream = self._get_app_stream(pid)
-         
+
         return sorted(['%s: %s' % (key, ''.join(str(byte) for byte in value)[:-1])
                 for key, value in stream.property_list.items()])
 
@@ -135,9 +134,11 @@ class Playback(Stream):
     def __init__(self):
         Stream.__init__(self, 'playback_streams')
 
+
 class Record(Stream):
     def __init__(self):
         Stream.__init__(self, 'record_streams')
+
 
 class Device(object):
 
@@ -176,7 +177,7 @@ class Device(object):
             self.devices = [pa.Device(self.conn, device)
                     for device in self.core.sources]
 
-        info = [] #this is terrible variable name
+        info = []  # this is terrible variable name
         for device in self.devices:
             name = device.name
             ports = [pa.DevicePort(self.conn, port) for port in device.ports]
@@ -275,7 +276,7 @@ class Device(object):
         rate = 65536.0/100.0
         if device and len(device.volume) > 1:
             volume = device.volume
-            left = volume[0] 
+            left = volume[0]
             right = volume[1] - rate if volume[1] - rate > 0 else 0
             self._set_volume(device, [left, right])
 
@@ -285,7 +286,7 @@ class Device(object):
 
     def properties(self, name):
         device = self._get_device(name)
-         
+
         return sorted(['%s: %s' % (key, ''.join(str(byte) for byte in value)[:-1])
                 for key, value in device.property_list.items()])
 
@@ -317,9 +318,11 @@ class OutputDevices(Device):
     def __init__(self):
         Device.__init__(self, 'sink')
 
+
 class InputDevices(Device):
     def __init__(self):
         Device.__init__(self, 'source')
+
 
 class Cards(object):
     def __init__(self):
@@ -358,15 +361,12 @@ class Cards(object):
 
         return info
 
-        
-
     def get_cards(self):
         current_cards = [card for card in self.core.cards]
 
         if not self.dbus_cards == current_cards:
             self.dbus_cards = current_cards
             self.info_data = self._get_cards()
-
 
         return self.info_data
 

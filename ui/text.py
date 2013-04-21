@@ -17,29 +17,27 @@
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ###############################################################################
 import curses
-import sys
 import ui.basic as basic
 import ui.tabs as tabs
-import time
-import string
+
 
 def main(stdscr):
 
     #Initial configuration
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    height, width = stdscr.getmaxyx()    
+    height, width = stdscr.getmaxyx()
 
     menu = stdscr.subwin(3, width, 0, 0)
     body = stdscr.subwin(height - 6, width, 3, 0)
     footer = stdscr.subwin(3, width, height - 3, 0)
-    
+
     tab_list = [tabs.TabPlayback(body),
                 tabs.TabRecord(body),
                 tabs.TabOutputDevices(body),
                 tabs.TabInputDevices(body),
                 tabs.TabCards(body)]
-              
+
     top_menu = basic.TopMenu(menu, tab_list)
     footer_menu = basic.FooterMenu(footer)
     top_menu.draw()
@@ -48,13 +46,13 @@ def main(stdscr):
     top_menu.focus = 1
     tab = top_menu.draw()
     tab.draw()
-    
-    stdscr.refresh()
-    stdscr.timeout(350) #Avoid too many refreshes
 
-    while True:        
-        c = stdscr.getch()
-        if c == curses.KEY_RESIZE:
+    stdscr.refresh()
+    stdscr.timeout(350)  # Avoid too many refreshes
+
+    while True:
+        pressed_key = stdscr.getch()
+        if pressed_key == curses.KEY_RESIZE:
             height, width = stdscr.getmaxyx()
             menu = stdscr.subwin(3, width, 0, 0)
             body = stdscr.subwin(height - 6, width, 3, 0)
@@ -68,28 +66,29 @@ def main(stdscr):
             tab = top_menu.draw()
             footer_menu.draw()
             tab.draw()
-            
-        elif c in (ord('q'),):
+
+        elif pressed_key in (ord('q'),):
             break
 
-        elif c in (curses.KEY_LEFT, ord('h'),):
+        elif pressed_key in (curses.KEY_LEFT, ord('h'),):
             if top_menu.focus - 1 in top_menu.tabs_dict:
                 top_menu.focus -= 1
                 tab = top_menu.draw()
 
-        elif c in (curses.KEY_RIGHT, ord('l'),):
+        elif pressed_key in (curses.KEY_RIGHT, ord('l'),):
             if top_menu.focus + 1 in top_menu.tabs_dict:
                 top_menu.focus += 1
                 tab = top_menu.draw()
 
-            
-        elif c in range(256) and chr(c) in string.printable[:10] and int(chr(c)) in top_menu.tabs_dict:
-            top_menu.focus = int(chr(c))
+        elif (pressed_key in range(256) and
+                chr(pressed_key).isdigit() and
+                int(chr(pressed_key)) in top_menu.tabs_dict):
+            top_menu.focus = int(chr(pressed_key))
             tab = top_menu.draw()
 
         else:
-            tab.update(c)
+            tab.update(pressed_key)
 
         tab.draw()
-            
+
         footer_menu.draw()

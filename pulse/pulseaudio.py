@@ -21,20 +21,23 @@ import dbus
 import functools as ft
 import subprocess
 import os
+import sys
 from os import path
+
 
 def dbus_connection():
     #Always try to start pulseaudio, if already started it returns 0 anyway
     #also this doesn't create another process
-    start_pulseaudio = subprocess.Popen(['pulseaudio', '--start', '--log-target=syslog'],
-                        stdout=open('/dev/null', 'w'), 
+    start_pulseaudio = subprocess.Popen(
+                        ['pulseaudio', '--start', '--log-target=syslog'],
+                        stdout=open('/dev/null', 'w'),
                         stderr=open('/dev/null', 'w')).wait()
 
     if start_pulseaudio == 0:
         home = path.expanduser("~")
         pulseaudio_path = path.join(home, '.pulse')
         addr = None
-    
+
         if path.exists(pulseaudio_path):
             for root, dirs, files in os.walk(pulseaudio_path):
                 for dir_ in dirs:
@@ -42,19 +45,21 @@ def dbus_connection():
                     if ('runtime' in dir_ and
                         path.islink(full_path) and
                         path.exists(os.readlink(full_path))):
-                        addr = 'unix:path=%s' % (path.join(os.readlink(full_path), 'dbus-socket'))
-    
+                        addr = 'unix:path=%s' % (
+                                            path.join(os.readlink(full_path),
+                                            'dbus-socket'))
+
         if addr is None:
             try:
                 addr = dbus.SessionBus().get_object('org.PulseAudio1',
                                             '/org/pulseaudio/server_lookup1').Get(
-                                                  'org.PulseAudio.ServerLookup1',
-                                                  'Address',
-                                                  dbus_interface='org.freedesktop.DBus.Properties')
-    
+                                                'org.PulseAudio.ServerLookup1',
+                                                'Address',
+                                                dbus_interface='org.freedesktop.DBus.Properties')
+
             except dbus.exceptions.DBusException:
                 sys.exit(1)
-    
+
         return dbus.connection.Connection(addr)
 
     else:
@@ -74,9 +79,9 @@ class Core(object):
                'FallbackSinkUpdated', 'FallbackSinkUnset', 'NewSource',
                'SourceRemoved', 'FallbackSourceUpdated', 'FallbackSourceUnset',
                'NewPlaybackStream', 'PlaybackStreamRemoved', 'NewRecordStream',
-               'RecordStreamRemoved', 'NewSample','SampleRemoved',
+               'RecordStreamRemoved', 'NewSample', 'SampleRemoved',
                'NewModule', 'ModuleRemoved', 'NewClient', 'ClientRemoved',
-               'NewExtension', 'ExtensionRemoved'] 
+               'NewExtension', 'ExtensionRemoved']
 
     def __init__(self, conn):
         self.conn = conn
@@ -179,7 +184,7 @@ class Core(object):
     def upload_sample(self, *args):
         return self.core.UploadSample(*args)
 
-    def load_module(*args):
+    def load_module(self, *args):
         return self.core.LoadModule(*args)
 
     def exit(self):
@@ -190,6 +195,7 @@ class Core(object):
 
     def stop_listening_for_signal(self, signal):
         self.core.StopListeningForSignal(signal)
+
 
 class MemoryStatistics(object):
     path = 'org.PulseAudio.Core1.Memstats'
@@ -218,10 +224,11 @@ class MemoryStatistics(object):
     @property
     def sample_cache_size(self):
         return self.get('SampleCacheSize')
- 
+
+
 class Card(object):
     path = 'org.PulseAudio.Core1.Card'
-    
+
     signals = ['ActiveProfileUpdated', 'NewProfile',
                'ProfileRemoved', 'PropertyListUpdated']
 
@@ -265,7 +272,10 @@ class Card(object):
     @active_profile.setter
     def active_profile(self, profile):
         try:
-            self.bus.Set(self.path, 'ActiveProfile', profile, dbus_interface='org.freedesktop.DBus.Properties')
+            self.bus.Set(self.path,
+                        'ActiveProfile',
+                        profile,
+                        dbus_interface='org.freedesktop.DBus.Properties')
 
         except dbus.exceptions.DBusException:
             pass
@@ -277,13 +287,14 @@ class Card(object):
     def get_profile_by_name(self, name):
         return self.bus.GetProfileByName(name)
 
+
 class CardProfile(object):
     path = 'org.PulseAudio.Core1.CardProfile'
 
     def __init__(self, conn, profile):
         self.conn = conn
         self.bus = conn.get_object(object_path=profile)
-        self.get = ft.partial(self.bus.Get, self.path) 
+        self.get = ft.partial(self.bus.Get, self.path)
         self.profile_name = profile
 
     @property
@@ -374,7 +385,10 @@ class Device(object):
 
     @volume.setter
     def volume(self, volume):
-        self.bus.Set(self.path, 'Volume', volume, dbus_interface='org.freedesktop.DBus.Properties')
+        self.bus.Set(self.path,
+                    'Volume',
+                    volume,
+                    dbus_interface='org.freedesktop.DBus.Properties')
 
     @property
     def has_flat_volume(self):
@@ -406,8 +420,11 @@ class Device(object):
     @mute.setter
     def mute(self, mute):
         try:
-            self.bus.Set(self.path, 'Mute', mute, dbus_interface='org.freedesktop.DBus.Properties')
-    
+            self.bus.Set(self.path,
+                         'Mute',
+                         mute,
+                         dbus_interface='org.freedesktop.DBus.Properties')
+
         except dbus.exceptions.DBusException:
             pass
 
@@ -461,11 +478,13 @@ class Device(object):
     @active_port.setter
     def active_port(self, name):
         try:
-            self.bus.Set(self.path, 'ActivePort', name, dbus_interface='org.freedesktop.DBus.Properties')
+            self.bus.Set(self.path,
+                         'ActivePort',
+                         name,
+                         dbus_interface='org.freedesktop.DBus.Properties')
 
         except dbus.exceptions.DBusException:
             pass
-
 
     @property
     def property_list(self):
@@ -573,7 +592,7 @@ class Stream(object):
     @property
     def volume(self):
         volume = [0, 0]
-        
+
         try:
             volume = self.get('Volume')
 
@@ -585,7 +604,10 @@ class Stream(object):
     @volume.setter
     def volume(self, volume):
         try:
-            self.bus.Set(self.path, 'Volume', volume, dbus_interface='org.freedesktop.DBus.Properties')
+            self.bus.Set(self.path,
+                         'Volume',
+                         volume,
+                         dbus_interface='org.freedesktop.DBus.Properties')
 
         except dbus.exceptions.DBusException:
             pass
@@ -606,7 +628,7 @@ class Stream(object):
         mute = False
 
         try:
-           mute = self.get('Mute')
+            mute = self.get('Mute')
 
         except dbus.exceptions.DBusException:
             pass
@@ -616,7 +638,10 @@ class Stream(object):
     @mute.setter
     def mute(self, mute):
         try:
-            self.bus.Set(self.path, 'Mute', mute, dbus_interface='org.freedesktop.DBus.Properties')
+            self.bus.Set(self.path,
+                         'Mute',
+                         mute,
+                         dbus_interface='org.freedesktop.DBus.Properties')
 
         except dbus.exceptions.DBusException:
             pass
@@ -780,7 +805,6 @@ class Client(object):
 
 if __name__ == '__main__':
     #this will be used for the tests
-    conn = dbus_connection()
-    core = Core(conn)
+    connection = dbus_connection()
+    core = Core(connection)
     print(core.sinks, core.interface_revision)
-
