@@ -20,6 +20,7 @@
 import pulse.pulseaudio as pa
 import dbus
 from itertools import cycle
+from gettext import gettext as _
 
 
 class Stream(object):
@@ -116,18 +117,18 @@ class Stream(object):
 
     def info(self, pid):
         stream = self._get_app_stream(pid)
-        return ('Index: %s' % stream.index,
-                'Driver: %s' % stream.driver,
-                'Owner Module: %s' % stream.owner_module,
-                'Client: %s' % stream.client,
-                'Device: %s' % stream.device,
-                'Sample Format: %s' % stream.sample_format,
-                'Sample Rate: %s' % stream.sample_rate,
-                'Channels: %s' % ','.join(str(channel) for channel in stream.channels),
-                'Volume Writable: %s' % stream.volume_writable,
-                'Buffer Latency: %s' % stream.buffer_latency,
-                'Device Latency: %s' % stream.device_latency,
-                'Resample Method: %s' % stream.resample_method)
+        return ('%s: %s' % (_('Index'), stream.index),
+                '%s: %s' % (_('Driver'), stream.driver),
+                '%s: %s' % (_('Owner Module'), stream.owner_module),
+                '%s: %s' % (_('Client'), stream.client),
+                '%s: %s' % (_('Device'), stream.device),
+                '%s: %s' % (_('Sample Format'), stream.sample_format),
+                '%s: %s' % (_('Sample Rate'), stream.sample_rate),
+                '%s: %s' % (_('Channels'), ','.join(str(channel) for channel in stream.channels)),
+                '%s: %s' % (_('Volume Writable'), stream.volume_writable),
+                '%s: %s' % (_('Buffer Latency'), stream.buffer_latency),
+                '%s: %s' % (_('Device Latency'), stream.device_latency),
+                '%s: %s' % (_('Resample Method'), stream.resample_method))
 
 
 class Playback(Stream):
@@ -168,7 +169,7 @@ class Device(object):
             device.active_port = cports.next().port_name
 
     def get_devices(self):
-        name = 'Unknown'
+        name = _('Unknown')
         if self.device_type == 'sink':
             self.devices = [pa.Device(self.conn, device)
                     for device in self.core.sinks]
@@ -292,26 +293,19 @@ class Device(object):
 
     def info(self, name):
         device = self._get_device(name)
-        return ('Index: %s' % device.index,
-                'Name: %s' % device.name,
-                'Driver: %s' % device.driver,
-                'Owner Module: %s' % device.owner_module,
-                'Card: %s' % device.card,
-                'Sample Format: %s' % device.sample_format,
-                'Sample Rate: %s' % device.sample_rate,
-                'Channels: %s' % ','.join(str(channel) for channel in device.channels),
-#                'Has Flat Volume: %s' % device.has_flat_volume,
-#                'Has Convertible To Decibel Volume: %s' % device.has_convertible_to_decibel_volume,
-                'Base Volume: %s' % device.base_volume,
-                'Volume Steps: %s' % device.volume_steps,
-#                'Has Hardware Volume: %s' % device.has_hardware_volume,
-#                'Has Hardware Mute: %s' % device.has_hardware_mute,
-                'Configured Latency: %s' % device.configured_latency,
-#                'Has Dynamic Latency: %s' % device.has_dynamic_latency,
-                'Latency: %s' % device.latency,
-#                'Is Hardware Device: %s' % device.is_hardware_device,
-#                'Is Network Device: %s' % device.is_network_device,
-                'State: %s' % device.state)
+        return ('%s: %s' % (_('Index'), device.index),
+                '%s: %s' % (_('Name'), device.name),
+                '%s: %s' % (_('Driver'), device.driver),
+                '%s: %s' % (_('Owner Module'), device.owner_module),
+                '%s: %s' % (_('Card'), device.card),
+                '%s: %s' % (_('Sample Format'), device.sample_format),
+                '%s: %s' % (_('Sample Rate'), device.sample_rate),
+                '%s: %s' % (_('Channels'), ','.join(str(channel) for channel in device.channels)),
+                '%s: %s' % (_('Base Volume'), device.base_volume),
+                '%s: %s' % (_('Volume Steps'), device.volume_steps),
+                '%s: %s' % (_('Configured Latency'), device.configured_latency),
+                '%s: %s' % (_('Latency'), device.latency),
+                '%s: %s' % (_('State'), device.state))
 
 
 class OutputDevices(Device):
@@ -373,16 +367,16 @@ class Cards(object):
     def info(self, info):
         card = self._get_card(info[0])
         profile = self._get_profile(info[0], info[1])
-        return ('Card Info',
-                'Index: %s' % (card.index),
-                'Driver: %s' % (card.driver),
-                'Sinks: %s' % (','.join(sink for sink in card.sinks)),
+        return (_('Card Info'),
+                '%s: %s' % (_('Index'), card.index),
+                '%s: %s' % (_('Driver'), card.driver),
+                '%s: %s' % (_('Sinks'), ','.join(sink for sink in card.sinks)),
                 '',
-                'Profile Info',
-                'Index: %s' % (profile.index),
-                'Description: %s' % (profile.description),
-                'Sinks: %s' % (profile.sinks),
-                'Priority: %s' % (profile.priority))
+                _('Profile Info'),
+                '%s: %s' % (_('Index'), profile.index),
+                '%s: %s' % (_('Description'), profile.description),
+                '%s: %s' % (_('Sinks'), profile.sinks),
+                '%s: %s' % (_('Priority'), profile.priority))
 
     def properties(self, info):
         card = self._get_card(info[0])

@@ -17,6 +17,7 @@
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ###############################################################################
 import curses
+from gettext import gettext as _
 
 
 def draw_info_window(win, info_data):
@@ -26,7 +27,7 @@ def draw_info_window(win, info_data):
     hb_height, hb_width = box.getmaxyx()
     box.erase()
     box.hline(hb_height - 3, 1, curses.ACS_HLINE, hb_width - 2)
-    message = "Press c to continue"
+    message = _("Press c to continue")
     box.addstr(hb_height - 2, hb_width//2 - len(message)//2, message)
     box.border(' ', ' ', ' ', ' ')
     for line_number, info in enumerate(info_data):
@@ -93,7 +94,7 @@ class FooterMenu(object):
     def draw(self):
         self.win.erase()
         self.win.box()
-        _help = 'Per Tab help press H.'
+        _help = _('Per Tab help press H.')
         if len(_help) > self.height:
             self.win.addstr(1, self.width//2 - len(_help)//2,
                             _help, curses.color_pair(1))

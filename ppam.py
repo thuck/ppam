@@ -1,8 +1,11 @@
 import curses
 import sys
 import ui.text
+import gettext
+from gettext import gettext as _
 
 if __name__ == '__main__':
+    gettext.install('ppam')
     try:
         curses.wrapper(ui.text.main)
 
@@ -10,7 +13,8 @@ if __name__ == '__main__':
         sys.exit(0)
 
     except curses.error as err:
-        print('Not enough screen space: %s' % (err))
+        message = _('Not enough screen space')
+        print('%s: %s' % (message, err))
         sys.exit(1)
     
 

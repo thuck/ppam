@@ -18,6 +18,7 @@
 ###############################################################################
 import curses
 from curses import KEY_UP, KEY_DOWN
+from gettext import gettext as _
 from ui.basic import draw_info_window
 from pulse import pulseaudio as pa
 from pulse import components as co
@@ -28,10 +29,10 @@ class GenericStream(object):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = name
-        self.help = ["+/- to Increase and decrease volume",
-                     ",/. to Increase and decrease right volume",
-                     "</> to Increase and decrease left volume",
-                     "m to Mute"]
+        self.help = [_("+/- to Increase and decrease volume"),
+                     _(",/. to Increase and decrease right volume"),
+                     _("</> to Increase and decrease left volume"),
+                     _("m to Mute")]
         self.selected_item = 0
         self.max_item = 0
         self.playback = getattr(co, stream_type)()
@@ -139,11 +140,11 @@ class GenericStream(object):
 
 class TabPlayback(GenericStream):
     def __init__(self, win):
-        GenericStream.__init__(self, win, 'Playback', 'Playback')
+        GenericStream.__init__(self, win, 'Playback', _('Playback'))
 
 class TabRecord(GenericStream):
     def __init__(self, win):
-        GenericStream.__init__(self, win, 'Record', 'Record')
+        GenericStream.__init__(self, win, 'Record', _('Record'))
 
     
 class GenericDevice(object):
@@ -151,10 +152,10 @@ class GenericDevice(object):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
         self.name = name
-        self.help = ["+/- to Increase and decrease volume",
-                     ",/. to Increase and decrease right volume",
-                     "</> to Increase and decrease left volume",
-                     "m to Mute"]
+        self.help = [_("+/- to Increase and decrease volume"),
+                     _(",/. to Increase and decrease right volume"),
+                     _("</> to Increase and decrease left volume"),
+                     _("m to Mute")]
         self.selected_item = 0
         self.max_item = 0
         self.device = getattr(co, device_type)()
@@ -294,18 +295,18 @@ class GenericDevice(object):
 
 class TabOutputDevices(GenericDevice):
     def __init__(self, win):
-        GenericDevice.__init__(self, win, 'OutputDevices', 'Output Devices')
+        GenericDevice.__init__(self, win, 'OutputDevices', _('Output Devices'))
 
 class TabInputDevices(GenericDevice):
     def __init__(self, win):
-        GenericDevice.__init__(self, win, 'InputDevices', 'Input Devices')
+        GenericDevice.__init__(self, win, 'InputDevices', _('Input Devices'))
 
 class TabCards(object):
     def __init__(self, win):
         self.win = win
         self.height, self.width = self.win.getmaxyx()
-        self.name = 'Cards'
-        self.help = ["Nothing here"]
+        self.name = _('Cards')
+        self.help = [_("Nothing here")]
         self.conn = pa.dbus_connection()
         self.core = pa.Core(self.conn)
         self.card = co.Cards()
@@ -378,7 +379,7 @@ class TabCards(object):
             (card_name,
             profile_name,
             active) = card
-            line = '[%s] %s' % (card_name, profile_name.replace('output', 'Out').replace('input', 'In').replace('+', ' '))
+            line = '[%s] %s' % (card_name, profile_name.replace('output', _('Out')).replace('input', _('In')).replace('+', ' '))
 
             if active:
                 line = '%s [A]' % (line)
