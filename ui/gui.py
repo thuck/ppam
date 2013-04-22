@@ -17,11 +17,25 @@
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ###############################################################################
 import curses
+import sys
 import ui.basic as basic
 import ui.tabs as tabs
 
 
-def main(stdscr):
+def main():
+    try:
+        curses.wrapper(ui)
+
+    except KeyboardInterrupt:
+        sys.exit(0)
+
+    except curses.error as err:
+        message = _('Not enough screen space')
+        print('%s: %s' % (message, err))
+        sys.exit(1)
+
+
+def ui(stdscr):
 
     #Initial configuration
     curses.curs_set(0)

@@ -17,10 +17,9 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ###############################################################################
-import pulse.pulseaudio as pa
 import dbus
+import pulse.pulseaudio as pa
 from itertools import cycle
-from gettext import gettext as _
 
 
 class Stream(object):

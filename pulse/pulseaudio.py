@@ -20,8 +20,8 @@
 import dbus
 import functools as ft
 import subprocess
-import os
 import sys
+import os
 from os import path
 
 

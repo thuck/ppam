@@ -18,7 +18,6 @@
 ###############################################################################
 import curses
 from curses import KEY_UP, KEY_DOWN
-from gettext import gettext as _
 from ui.basic import draw_info_window
 from pulse import pulseaudio as pa
 from pulse import components as co
