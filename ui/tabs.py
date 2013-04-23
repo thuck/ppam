@@ -29,7 +29,7 @@ class GenericStream(object):
         self.height, self.width = self.win.getmaxyx()
         self.name = name
         self.help = [_("+/- to Increase and decrease volume"),
-                     _(",/. to Increase and decrease right volume"),
+                     _("./, to Increase and decrease right volume"),
                      _("</> to Increase and decrease left volume"),
                      _("m to Mute")]
         self.selected_item = 0
@@ -160,7 +160,7 @@ class GenericDevice(object):
         self.height, self.width = self.win.getmaxyx()
         self.name = name
         self.help = [_("+/- to Increase and decrease volume"),
-                     _(",/. to Increase and decrease right volume"),
+                     _("./, to Increase and decrease right volume"),
                      _("</> to Increase and decrease left volume"),
                      _("m to Mute")]
         self.selected_item = 0
