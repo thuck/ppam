@@ -28,7 +28,10 @@ from os import path
 def dbus_connection():
     #Always try to start pulseaudio, if already started it returns 0 anyway
     #also this doesn't create another process
-    start_pulseaudio = subprocess.Popen(
+    start_pulseaudio = subprocess.Popen(['pulseaudio', '--check']).wait()
+
+    if start_pulseaudio != 0:
+        start_pulseaudio = subprocess.Popen(
                         ['pulseaudio', '--start', '--log-target=syslog'],
                         stdout=open('/dev/null', 'w'),
                         stderr=open('/dev/null', 'w')).wait()
