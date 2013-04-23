@@ -1,5 +1,8 @@
 *.py[co]
 
+# vim swap
+*.swp
+
 # Packages
 *.egg
 *.egg-info
