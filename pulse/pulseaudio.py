@@ -25,9 +25,15 @@ import os
 from os import path
 
 
+_DBUSCONNECTION = None
+
 def dbus_connection():
     #Always try to start pulseaudio, if already started it returns 0 anyway
     #also this doesn't create another process
+    global _DBUSCONNECTION
+
+    if _DBUSCONNECTION is not None:
+        return _DBUSCONNECTION
     start_pulseaudio = subprocess.Popen(['pulseaudio', '--check']).wait()
 
     if start_pulseaudio != 0:
@@ -63,7 +69,9 @@ def dbus_connection():
             except dbus.exceptions.DBusException:
                 sys.exit(1)
 
-        return dbus.connection.Connection(addr)
+        _DBUSCONNECTION = dbus.connection.Connection(addr)
+
+        return _DBUSCONNECTION
 
     else:
         #Include an error here
