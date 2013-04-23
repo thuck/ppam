@@ -77,7 +77,7 @@ class GenericStream(object):
             elif char in (ord('m'),):
                 self.playback.mute(pid)
 
-            elif char in (ord('>'), ord('.')):
+            elif char in (ord('>'), ):
                 self.playback.increase_left_volume(pid)
 
             elif char in (ord('.'), ):
@@ -112,13 +112,21 @@ class GenericStream(object):
         self.win.box()
 
         for line_number, stream in enumerate(self.streams):
-            (app_name,
-            app_pid,
-            volume_left,
-            volume_right,
-            mute) = stream
-            line = '[%s] L:%i%% R:%i%% (%s)' % (app_name, volume_left,
+            if len(stream) == 5:
+                (app_name,
+                app_pid,
+                volume_left,
+                volume_right,
+                mute) = stream
+                line = '[%s] L:%i%% R:%i%% (%s)' % (app_name, volume_left,
                                                 volume_right, app_pid)
+
+            else:
+                (app_name,
+                app_pid,
+                volume_left,
+                mute) = stream
+                line = '[%s] M:%i%% (%s)' % (app_name, volume_left, app_pid)
 
             if mute:
                 line = '%s [M]' % (line)
@@ -201,7 +209,7 @@ class GenericDevice(object):
             elif char in (ord('m'),):
                 self.device.mute(name)
 
-            elif char in (ord('>'), ord('.')):
+            elif char in (ord('>'), ):
                 self.device.increase_left_volume(name)
 
             elif char in (ord('.'), ):

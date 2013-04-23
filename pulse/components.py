@@ -33,11 +33,22 @@ class Stream(object):
         self.streams = [pa.Stream(self.conn, stream)
                     for stream in getattr(self.core, self.stream_type)]
 
-        return [(''.join(str(byte) for byte in stream.property_list['application.name'])[:-1],
+        streams = [] # terrible name
+        for stream in self.streams:
+            if len(stream.volume) > 1:
+                streams.append((''.join(str(byte) for byte in stream.property_list['application.name'])[:-1],
             ''.join(str(byte) for byte in stream.property_list['application.process.id'])[:-1],
             round(stream.volume[0]*100.0/65536.0),
             round(stream.volume[1]*100.0/65536.0),
-            stream.mute) for stream in self.streams]
+            stream.mute))
+
+            else:
+                streams.append((''.join(str(byte) for byte in stream.property_list['application.name'])[:-1],
+            ''.join(str(byte) for byte in stream.property_list['application.process.id'])[:-1],
+            round(stream.volume[0]*100.0/65536.0),
+            stream.mute))
+
+        return streams
 
     def _get_app_stream(self, pid):
         for stream in self.streams:
@@ -48,7 +59,11 @@ class Stream(object):
         return None
 
     def _set_volume(self, stream, volume):
-        stream.volume = [dbus.UInt32(volume[0]), dbus.UInt32(volume[1])]
+        if len(volume) == 2:
+            stream.volume = [dbus.UInt32(volume[0]), dbus.UInt32(volume[1])]
+
+        else:
+            stream.volume = [dbus.UInt32(volume[0])]
 
     def increase_volume(self, pid):
         stream = self._get_app_stream(pid)
@@ -56,13 +71,17 @@ class Stream(object):
         if stream:
             volume = stream.volume
             left = volume[0] + rate if volume[0] + rate < 98304 else 98304
-            right = volume[1] + rate if volume[1] + rate < 98304 else 98304
-            self._set_volume(stream, [left, right])
+            if len(stream.volume) > 1:
+                right = volume[1] + rate if volume[1] + rate < 98304 else 98304
+                self._set_volume(stream, [left, right])
+
+            else:
+                self._set_volume(stream, [left])
 
     def increase_left_volume(self, pid):
         stream = self._get_app_stream(pid)
         rate = 65536.0/100.0
-        if stream:
+        if stream and len(stream.volume) > 1:
             volume = stream.volume
             left = volume[0] + rate if volume[0] + rate < 98304 else 98304
             right = volume[1]
@@ -71,7 +90,7 @@ class Stream(object):
     def increase_right_volume(self, pid):
         stream = self._get_app_stream(pid)
         rate = 65536.0/100.0
-        if stream:
+        if stream and len(stream.volume) > 1:
             volume = stream.volume
             left = volume[0]
             right = volume[1] + rate if volume[1] + rate < 98304 else 98304
@@ -83,13 +102,17 @@ class Stream(object):
         if stream:
             volume = stream.volume
             left = volume[0] - rate if volume[0] - rate > 0 else 0
-            right = volume[1] - rate if volume[1] - rate > 0 else 0
-            self._set_volume(stream, [left, right])
+            if len(stream.volume) > 1:
+                right = volume[1] - rate if volume[1] - rate > 0 else 0
+                self._set_volume(stream, [left, right])
+
+            else:
+                self._set_volume(stream, [left])
 
     def decrease_left_volume(self, pid):
         stream = self._get_app_stream(pid)
         rate = 65536.0/100.0
-        if stream:
+        if stream and len(stream.volume) > 1:
             volume = stream.volume
             left = volume[0] - rate if volume[0] - rate > 0 else 0
             right = volume[1]
@@ -98,7 +121,7 @@ class Stream(object):
     def decrease_right_volume(self, pid):
         stream = self._get_app_stream(pid)
         rate = 65536.0/100.0
-        if stream:
+        if stream and len(stream.volume) > 1:
             volume = stream.volume
             left = volume[0]
             right = volume[1] - rate if volume[1] - rate > 0 else 0
@@ -234,7 +257,7 @@ class Device(object):
     def increase_left_volume(self, name):
         device = self._get_device(name)
         rate = 65536.0/100.0
-        if stream and len(device.volume) > 1:
+        if device and len(device.volume) > 1:
             volume = device.volume
             left = volume[0] + rate if volume[0] + rate < 98304 else 98304
             right = volume[1]
