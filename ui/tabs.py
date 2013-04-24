@@ -31,7 +31,8 @@ class GenericStream(object):
         self.help = [_("+/- to Increase and decrease volume"),
                      _("./, to Increase and decrease right volume"),
                      _("</> to Increase and decrease left volume"),
-                     _("m to Mute")]
+                     _("m to Mute"),
+                     _("K to kill the steram")]
         self.selected_item = 0
         self.max_item = 0
         self.playback = getattr(co, stream_type)()
@@ -96,6 +97,9 @@ class GenericStream(object):
             elif char in (ord('i'), ):
                 self.type_of_info = 'i'
                 self.info_window_data = self.playback.info(pid)
+
+            elif char in (ord('K'), ):
+                self.playback.kill(pid)
 
             elif char in (KEY_UP, ord('k')) and self.selected_item > 0:
                 self.selected_item -= 1

@@ -131,6 +131,10 @@ class Stream(object):
         stream = self._get_app_stream(pid)
         stream.mute = not stream.mute
 
+    def kill(self, pid):
+        stream = self._get_app_stream(pid)
+        stream.kill()
+
     def properties(self, pid):
         stream = self._get_app_stream(pid)
 
