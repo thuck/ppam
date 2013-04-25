@@ -382,11 +382,20 @@ class Cards(object):
         return info
 
     def get_cards(self):
+        info = []
         current_cards = [card for card in self.core.cards]
 
         if not self.dbus_cards == current_cards:
             self.dbus_cards = current_cards
             self.info_data = self._get_cards()
+
+        else:
+            for card in self.cards:
+                for profile in self.profiles[card.name]:
+                    active = True if profile.profile_name == card.active_profile else False
+                    info.append((card.name, profile.name, active))
+
+            self.info_data = info
 
         return self.info_data
 
