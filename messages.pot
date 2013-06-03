@@ -1,0 +1,77 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2013-04-22 10:59+CEST\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: ./ppam.py:16
+msgid "Not enough screen space"
+msgstr ""
+
+#: ./ui/basic.py:30
+msgid "Press c to continue"
+msgstr ""
+
+#: ./ui/basic.py:97
+msgid "Per Tab help press H."
+msgstr ""
+
+#: ./ui/tabs.py:32 ./ui/tabs.py:155
+msgid "+/- to Increase and decrease volume"
+msgstr ""
+
+#: ./ui/tabs.py:33 ./ui/tabs.py:156
+msgid ",/. to Increase and decrease right volume"
+msgstr ""
+
+#: ./ui/tabs.py:34 ./ui/tabs.py:157
+msgid "</> to Increase and decrease left volume"
+msgstr ""
+
+#: ./ui/tabs.py:35 ./ui/tabs.py:158
+msgid "m to Mute"
+msgstr ""
+
+#: ./ui/tabs.py:143
+msgid "Playback"
+msgstr ""
+
+#: ./ui/tabs.py:147
+msgid "Record"
+msgstr ""
+
+#: ./ui/tabs.py:298
+msgid "Output Devices"
+msgstr ""
+
+#: ./ui/tabs.py:302
+msgid "Input Devices"
+msgstr ""
+
+#: ./ui/tabs.py:308
+msgid "Cards"
+msgstr ""
+
+#: ./ui/tabs.py:309
+msgid "Nothing here"
+msgstr ""
+
+#: ./ui/tabs.py:382
+msgid "In"
+msgstr ""
+
+#: ./ui/tabs.py:382
+msgid "Out"
+msgstr ""
+
